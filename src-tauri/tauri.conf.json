@@ -59,6 +59,6 @@
       "iconPath": "icons/tray.png",
       "iconAsTemplate": false
     },
-    "windows": [ { "fullscreen": false, "height": 600, "width": 1200, "resizable": true, "title": "E-Z Servoces" } ]
+    "windows": [ { "fullscreen": false, "height": 600, "width": 1200, "resizable": true, "title": "E-Z Services" } ]
   }
 }
