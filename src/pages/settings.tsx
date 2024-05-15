@@ -1,18 +1,21 @@
 import React from "react";
-import SideBar from "./Sidebar";
-import SettingsCard from "./SettingsCard";
+import SideBar from "../components/Sidebar";
+import SettingsCard from "../components/SettingsCard";
 import { useSidebar } from "../components/SidebarContext";
 import { invoke } from "@tauri-apps/api/tauri";
+import { useRouter } from "next/router";
 
-function Settings({ dontShowSb = false }: { dontShowSb?: boolean }) {
+function Settings() {
   const { minimized } = useSidebar();
+  let router = useRouter();
+
   return (
     <>
-      {dontShowSb ? (
+      {router.query.isSetup === "false" ? (
         <>
           <div className={`relative h-screen pt-8  p-8 duration-100`}>
             <div className="bg-zinc-925 rounded-lg w-full relative sm:p-4 p-0 mb-4">
-              <h1 className="text-blue-100 font-poppins font-bold text-xl">
+              <h1 className="text-blue-100 font-bold text-xl">
                 Setting<span onClick={() => invoke("reset_settings")}>s</span>
               </h1>
               <SettingsCard />
@@ -29,7 +32,7 @@ function Settings({ dontShowSb = false }: { dontShowSb?: boolean }) {
             } pt-8  p-8 duration-100`}
           >
             <div className="bg-zinc-925 rounded-lg w-full relative sm:p-4 p-0 mb-4">
-              <h1 className="text-blue-100 font-poppins font-bold text-xl">
+              <h1 className="text-blue-100 font-bold text-xl">
                 Setting<span onClick={() => invoke("reset_settings")}>s</span>
               </h1>
               <SettingsCard />

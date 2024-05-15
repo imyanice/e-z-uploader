@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { isEnabled, enable, disable } from "tauri-plugin-autostart-api";
-import Toggle from "../components/Toggle";
+import Toggle from "./Toggle";
 import { open } from "@tauri-apps/api/shell";
 
 function SettingsCard() {
@@ -42,7 +42,7 @@ function SettingsCard() {
       <div className="flex w-full flex-col gap-3">
         <div className="flex w-full flex-col gap-3 lg:flex-row">
           <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
-            <p className="text-blue-100 font-poppins font-bold text-xl">
+            <p className="text-blue-100 font-bold text-xl">
               Auto Launch
             </p>
             <Toggle
@@ -56,7 +56,7 @@ function SettingsCard() {
             />
           </div>
           <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
-            <p className="text-blue-100 font-poppins font-bold text-xl">
+            <p className="text-blue-100 font-bold text-xl">
               Auto-Wipe
             </p>
             <Toggle
@@ -70,14 +70,13 @@ function SettingsCard() {
           </div>
         </div>
         <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
-          <h2 className="text-blue-100 font-poppins font-bold text-xl">
+          <h2 className="text-blue-100 font-bold text-xl mb-2">
             API Key
           </h2>
-          <text className="text-gray-300">Enter your API key here:</text>
           <div className="flex flex-row">
             <input
               type={showApiKey ? "text" : "password"}
-              className="w-full block border-0 text-sm bg-zinc-800 py-1.5 pl-3 rounded-r-md text-blue-100 font-poppins shadow-sm ring-1 ring-zinc-700 focus:ring-1 focus:ring-blue-600"
+              className="w-full block border-0 text-sm bg-zinc-800 py-1.5 pl-3 rounded-md text-blue-100 shadow-sm ring-1 ring-zinc-700 focus:ring-1 focus:ring-blue-600"
               placeholder={"API Key"}
               id={"apiKeyInput"}
               //@ts-ignore
@@ -101,7 +100,7 @@ function SettingsCard() {
             </button>
           </div>
           <button
-            className="relative mt-4 inline-flex items-center font-poppins rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
+            className="relative mt-2 inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
             onClick={() => {
               const input = document.getElementById(
                 "apiKeyInput"
@@ -115,24 +114,20 @@ function SettingsCard() {
         </div>
       </div>
       <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
-        <h2 className="text-blue-100 font-poppins font-bold text-xl">
+        <h2 className="text-blue-100 font-bold text-xl mb-2">
           Upload URL
         </h2>
-        <text className="text-gray-300">
-          Here, enter your upload url, this is useful if you are part of the
-          beta program or if you are a proxy user:
-        </text>
         <input
           type="text"
-          className="w-full block border-0 text-sm bg-zinc-800 py-1.5 pl-3 rounded-r-md text-blue-100 font-poppins shadow-sm ring-1 ring-zinc-700 focus:ring-1 focus:ring-blue-600"
+          className="w-full block border-0 text-sm bg-zinc-800 py-1.5 pl-3 rounded-md text-blue-100 shadow-sm ring-1 ring-zinc-700 focus:ring-1 focus:ring-blue-600"
           placeholder={uploadUrlPlaceHolder}
           id={"uploadURLInput"}
           value={uploadUrlValue}
           onInput={onInput}
         />
-        <div className={"flex w-full gap-1"}>
+        <div className={"flex w-full gap-1 mt-2"}>
           <button
-            className="relative mt-4 inline-flex items-center font-poppins rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
+            className="relative inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
             onClick={() => {
               const input = document.getElementById(
                 "uploadURLInput"
@@ -144,7 +139,7 @@ function SettingsCard() {
             Save
           </button>
           <button
-            className="relative mt-4 inline-flex items-center font-poppins rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
+            className="relative inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
             onClick={() => {
               invoke("set_upload_url", {
                 uploadUrl: "https://api.e-z.host/files",
@@ -161,17 +156,17 @@ function SettingsCard() {
         <></>
       ) : (
         <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
-          <h2 className="text-blue-100 font-poppins font-bold text-xl">
+          <h2 className="text-blue-100 font-bold text-xl">
             Initialize the uploader
           </h2>
-          <text className="text-gray-300 font-poppins">
+          <text className="text-gray-300">
             The uploader will restart and live in your task bar, open the
             settings from here from now on.
           </text>
           <br />
           <div className={"flex w-full gap-1"}>
             <button
-              className="relative mt-4 inline-flex items-center font-poppins rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
+              className="relative mt-4 inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
               onClick={() => {
                 invoke("setup");
               }}
@@ -179,7 +174,7 @@ function SettingsCard() {
               {"Set Up"}
             </button>
             <button
-              className="relative mt-4 inline-flex items-center font-poppins rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
+              className="relative mt-4 inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
               onClick={async () => {
                 await open(
                   "https://cdn.discordapp.com/attachments/1011662796141903933/1193605646516502578/image.png?ex=65ad52e2&is=659adde2&hm=deb66d82919cf92c4ef816fe3885ce16d1367841113dbb5d7faaec8ed29dbdd1&"

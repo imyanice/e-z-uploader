@@ -1,5 +1,5 @@
 import React from "react";
-import Sidebar from "./Sidebar";
+import Sidebar from "../components/Sidebar";
 import { useSidebar } from "../components/SidebarContext";
 import { invoke } from "@tauri-apps/api/tauri";
 export default function Upload() {
@@ -15,7 +15,7 @@ export default function Upload() {
         <div className="bg-zinc-925 rounded-lg w-full relative sm:p-4 p-0 mb-4">
           <div className="grid grid-cols-1 gap-x-8 gap-y-4 p-4">
             <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 w-full p-4 rounded-lg">
-              <h1 className="text-blue-100 font-poppins font-bold text-xl">
+              <h1 className="text-blue-100 font-bold text-xl">
                 File Uploader
               </h1>
               <div className="flow-root mt-3">
@@ -38,10 +38,10 @@ export default function Upload() {
                             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                           ></path>
                         </svg>
-                        <p className="mb-2 text-sm font-poppins text-gray-500 dark:text-gray-400 font-semibold">
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 font-semibold">
                           Click to upload a file
                         </p>
-                        <p className="text-sm font-poppins text-gray-500 dark:text-gray-400 text-center">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                           Allowed Mimetypes are Image, Video and Application.
                         </p>
                       </div>
