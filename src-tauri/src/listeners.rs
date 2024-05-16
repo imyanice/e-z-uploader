@@ -22,7 +22,7 @@ pub fn watch_file_system(app: tauri::AppHandle) {
         for res in &rx {
             match res {
                 Ok(event) => {
-                    if event.kind == EventKind::Create(CreateKind::File) && event.kind == EventKind::Modify(ModifyKind::Any)
+                    if event.kind == EventKind::Create(CreateKind::File)
                         && last_image != event.paths[0].to_str().unwrap()
                         && files::is_image(&event.paths[0])
                     {
