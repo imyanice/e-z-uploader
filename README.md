@@ -1,4 +1,8 @@
 # E-Z Uploader
+## Download 
+
+https://github.com/imyanice/e-z-uploader/releases/latest
+
 
 ## Reqs
 
