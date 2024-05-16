@@ -43,8 +43,8 @@ export default function Sidebar({ page }: { page: string }) {
                 <button
                   onClick={() => router.push(`/`)}
                   className={`${page === 'dash'
-                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-t-md'
-                    : 'self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-t-md'
+                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-md'
+                    : 'self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-md'
                     }`}
                 >
                   <svg
@@ -61,8 +61,8 @@ export default function Sidebar({ page }: { page: string }) {
                 <button
                   onClick={() => router.push(`/settings`)}
                   className={`${page === 'settings'
-                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center'
-                    : 'self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center'
+                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-md'
+                    : 'self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-md'
                     }`}
                 >
                   <svg
@@ -146,8 +146,8 @@ export default function Sidebar({ page }: { page: string }) {
                 <button
                   onClick={() => router.push(`/`)}
                   className={`${page === 'dash'
-                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-t-md'
-                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-t-md"
+                    ? 'self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-md'
+                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-md"
                     }`}
                 >
                   Home
@@ -157,8 +157,8 @@ export default function Sidebar({ page }: { page: string }) {
                 <button
                   onClick={() => router.push(`/settings`)}
                   className={`${page === "settings"
-                    ? "self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center"
-                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center"
+                    ? "self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-md"
+                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-md"
                     }`}
                 >
                   Settings
@@ -168,8 +168,8 @@ export default function Sidebar({ page }: { page: string }) {
                 <button
                   onClick={() => router.push(`/upload`)}
                   className={`${page === "upload"
-                    ? "self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-b-md"
-                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-b-md"
+                    ? "self-center bg-zinc-925 border-2 border-blue-700 w-full p-1.5 text-center rounded-md"
+                    : "self-center bg-zinc-900 hover:bg-zinc-925 duration-300 border-2 border-zinc-900 w-full p-1.5 text-center rounded-md"
                     }`}
                 >
                   Upload
