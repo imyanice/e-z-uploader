@@ -1,6 +1,6 @@
 [package]
 name = "e-z-uploader"
-version = "2.0.0"
+version = "2.0.1"
 description = "E-Z screenshot uploader"
 authors = ["imyanice"]
 license = "GPL-v3"
