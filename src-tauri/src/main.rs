@@ -64,8 +64,8 @@ fn main() {
     } else {
         tauri::WindowBuilder::new(&app, "local", tauri::WindowUrl::App("index.html".into()))
             .title("E-Z Services")
-            .inner_size(950f64, 740f64)
-            .min_inner_size(950f64, 730f64)
+            .inner_size(1200f64, 600f64)
+            .min_inner_size(730f64, 600f64)
             .center()
             .build()
             .expect("Could not start window");
@@ -105,8 +105,8 @@ fn handle_tray_click(app: &tauri::AppHandle, event: SystemTrayEvent) {
                         "local",
                         tauri::WindowUrl::App("index.html".into()),
                     )
-                    .inner_size(950f64, 730f64)
-                    .min_inner_size(950f64, 730f64)
+                    .inner_size(1200f64, 600f64)
+                    .min_inner_size(730f64, 600f64)
                     .center()
                     .title("E-Z Services")
                     .build()
