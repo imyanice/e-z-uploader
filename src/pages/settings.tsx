@@ -45,8 +45,8 @@ function Settings() {
 
   return (
     <>
-      <SideBar page={'settings'} />
-      <main className={`relative h-screen ${minimized ? "min-[900px]:ml-24" : "min-[900px]:ml-52"} pt-8 p-8 duration-100`}>
+      {setupCompleted ? <SideBar page={'settings'} /> : <></>}
+      <main className={`relative h-screen ${ setupCompleted ? minimized ? "min-[900px]:ml-24" : "min-[900px]:ml-52" : ""} pt-8 p-8 duration-100`}>
         <div className="bg-zinc-925 rounded-lg w-full relative sm:p-4 p-0 mb-4">
           <div className="grid min-[1100px]:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 p-4 grid-flow-row-dense">
             <div className="bg-zinc-900 shadow-sm shadow-zinc-950 hover:shadow-md hover:shadow-zinc-950 duration-100 p-4 w-full rounded-lg">
@@ -181,9 +181,9 @@ function Settings() {
                   <button
                     className="relative mt-4 inline-flex items-center rounded-md bg-zinc-800 border-[1px] border-zinc-700 hover:bg-zinc-700 hover:border-blue-700 duration-300 active:translate-y-1 px-3 py-2 text-sm font-semibold text-blue-100 "
                     onClick={async () => {
-                      await open(
-                        "https://cdn.discordapp.com/attachments/1011662796141903933/1193605646516502578/image.png?ex=65ad52e2&is=659adde2&hm=deb66d82919cf92c4ef816fe3885ce16d1367841113dbb5d7faaec8ed29dbdd1&"
-                      );
+                      open(
+                          'https://cdn.discordapp.com/attachments/1011662796141903933/1193605646516502578/image.png?ex=65ad52e2&is=659adde2&hm=deb66d82919cf92c4ef816fe3885ce16d1367841113dbb5d7faaec8ed29dbdd1&',
+                      )
                     }}
                   >
                     {"More info"}
