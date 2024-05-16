@@ -10,7 +10,6 @@ use reqwest::blocking::{
     multipart::{Form, Part},
     Client,
 };
-use sentry::Level;
 use serde::{Deserialize, Serialize};
 use tauri::api::dialog::message;
 use tauri::api::notification::Notification;
