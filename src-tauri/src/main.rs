@@ -53,6 +53,10 @@ fn main() {
         config_with_upload_url.upload_url = "https://api.e-z.host/files".to_string();
         config::set_config(&app_handle, config_with_upload_url);
     }
+    // let version = reqwest::blocking::get("https://github.com/imyanice/e-z-uploader/raw/main/.version").unwrap().text().unwrap();
+    // if version != app.package_info().version.to_string() + "\n" {
+    //     tauri::api::notification::Notification::new(app_handle.config().tauri.bundle.identifier.clone()).title("New update available").body("Download it from your dashboard/the GitHub page.").show().expect("could not show update notification");
+    // }
 
     if base_config.setup {
         #[cfg(target_os = "macos")]
@@ -64,8 +68,8 @@ fn main() {
     } else {
         tauri::WindowBuilder::new(&app, "local", tauri::WindowUrl::App("index.html".into()))
             .title("E-Z Services")
-            .inner_size(950f64, 740f64)
-            .min_inner_size(950f64, 730f64)
+            .inner_size(1200f64, 600f64)
+            .min_inner_size(730f64, 600f64)
             .center()
             .build()
             .expect("Could not start window");
@@ -78,6 +82,7 @@ fn main() {
             }
         }
     });
+
 }
 
 fn get_system_tray() -> SystemTray {
@@ -105,8 +110,8 @@ fn handle_tray_click(app: &tauri::AppHandle, event: SystemTrayEvent) {
                         "local",
                         tauri::WindowUrl::App("index.html".into()),
                     )
-                    .inner_size(950f64, 730f64)
-                    .min_inner_size(950f64, 730f64)
+                    .inner_size(1200f64, 600f64)
+                    .min_inner_size(730f64, 600f64)
                     .center()
                     .title("E-Z Services")
                     .build()

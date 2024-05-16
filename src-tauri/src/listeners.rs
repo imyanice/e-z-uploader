@@ -1,4 +1,4 @@
-use notify::event::{CreateKind, ModifyKind};
+use notify::event::{CreateKind};
 use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::sync::mpsc::channel;
 
