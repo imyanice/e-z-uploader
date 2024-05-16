@@ -5,7 +5,7 @@ export default function Loading({ message }: { message: string }) {
     <div className="flex h-screen justify-center">
       <div className="m-auto flex flex-col items-center">
         <img className={`h-44 w-44`} alt="" src={eztransparent.src}></img>
-        <p className={`text-blue-100 text-xl font-semibold font-poppins`}>
+        <p className={`text-blue-100 text-xl font-semibold`}>
           {message}
         </p>
       </div>

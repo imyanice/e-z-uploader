@@ -34,7 +34,7 @@ export default function Toggle({
           <label
             className={`${
               bigText ? "text-base" : "text-sm"
-            } cursor-help text-blue-100 font-poppins font-semibold mr-2 whitespace-nowrap`}
+            } cursor-help text-blue-100 font-semibold mr-2 whitespace-nowrap`}
           >
             {label}
           </label>
@@ -42,7 +42,7 @@ export default function Toggle({
             className={`z-[100] absolute border-2 max-w-[320px] bg-zinc-800 border-zinc-700 rounded-md p-1 scale-0 group-hover:scale-100 group-hover:translate-y-[1.75rem] duration-300 transform-gpu`}
           >
             <span
-              className={`font-poppins text-white font-semibold text-sm text-center flex`}
+              className={`text-white font-semibold text-sm text-center flex`}
             >
               {description}
             </span>
