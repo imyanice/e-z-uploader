@@ -52,55 +52,61 @@ pub fn upload_file_to_host(file: &Path, app_handle: &tauri::AppHandle) {
         );
         return;
     }
-    let client = Client::builder()
-        .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36")
-        .build()
-        .expect("failed to build client");
-    let request = client
-        .post(config.upload_url)
-        .header("key", config.api_key)
-        .multipart(Form::new().part("file", Part::file(file).unwrap()))
-        .send();
-    
-    match request {
-        Ok(data) => {
-            match data.status() {
-                reqwest::StatusCode::OK => {
-                    let response = data
-                        .json::<UploadResponse>()
-                        .expect("Could not parse upload response");
-                    let mut clipboard = Clipboard::new().unwrap();
-                    let url = response.imageUrl.clone();
-                    match clipboard.set_text(response.imageUrl) {
-                        Ok {..} => {
-                            if !config.auto_wipe {
-                                add_file_data(app_handle, file, response.deletionUrl, url)
-                            };
-                            utils::add_int_to_uploaded_files(app_handle);
-                            display_successful_notification(app_handle);
-                        },
-                        Err (err) => {
-                            display_error_message(app_handle);
-                            sentry::capture_error(&err);
-                        }
+    match Part::file(file) {
+        Ok(part_file) => {
+            let client = Client::builder()
+                .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36")
+                .build()
+                .expect("failed to build client");
+            let request = client
+                .post(config.upload_url)
+                .header("key", config.api_key)
+                .multipart(Form::new().part("file", part_file))
+                .send();
 
-                    };
+            match request {
+                Ok(data) => {
+                    match data.status() {
+                        reqwest::StatusCode::OK => {
+                            let response = data
+                                .json::<UploadResponse>()
+                                .expect("Could not parse upload response");
+                            let mut clipboard = Clipboard::new().unwrap();
+                            let url = response.imageUrl.clone();
+                            match clipboard.set_text(response.imageUrl) {
+                                Ok {..} => {
+                                    if !config.auto_wipe {
+                                        add_file_data(app_handle, file, response.deletionUrl, url)
+                                    };
+                                    utils::add_int_to_uploaded_files(app_handle);
+                                    display_successful_notification(app_handle);
+                                },
+                                Err (err) => {
+                                    display_error_message(app_handle);
+                                    sentry::capture_error(&err);
+                                }
+
+                            };
+                        }
+                        reqwest::StatusCode::UNAUTHORIZED => {
+                            display_error_message(app_handle);
+                            println!("Invalid API Key")
+                        }
+                        _ => {
+                            display_error_message(app_handle);
+                            panic!("An invalid status code has been given");
+                        }
+                    }
                 }
-                reqwest::StatusCode::UNAUTHORIZED => {
-                    display_error_message(app_handle);
-                    println!("Invalid API Key")
-                }
-                _ => {
-                    display_error_message(app_handle);
-                    panic!("An invalid status code has been given");
+                Err(err) => {
+                    sentry::capture_error(&err);
+                    display_no_internet_notification(app_handle);
                 }
             }
-        }
-        Err(err) => {
-            sentry::capture_error(&err);
-            display_no_internet_notification(app_handle);
-        }
+        },
+        Err(_) => println!("file doesnt exist")
     }
+
 
     if config.auto_wipe {
         delete_file(file);
@@ -140,19 +146,38 @@ fn add_file_data(app_handle: &AppHandle, file_path: &Path, deletion_url: String,
         .join("uploaded_files.json");
     match fs::read_to_string(&path) {
         Ok(cfg) => {
-            let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
-            json.push(UploadedFile {
-                path: file_path.as_os_str().to_str().unwrap().to_string(),
-                deletion_url,
-                name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
-                size: file_path.symlink_metadata().unwrap().len() as i64,
-                url,
-            });
-            let s = serde_json::to_string(&json).unwrap().to_string();
-            File::create(&path)
-                .unwrap()
-                .write_all(s.as_ref())
-                .expect("TODO: panic message");
+            match file_path.symlink_metadata() {
+                Ok(file_meta) => {
+                    let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
+                    json.push(UploadedFile {
+                        path: file_path.as_os_str().to_str().unwrap().to_string(),
+                        deletion_url,
+                        name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
+                        size: file_meta.len() as i64,
+                        url,
+                    });
+                    let s = serde_json::to_string(&json).unwrap().to_string();
+                    File::create(&path)
+                        .unwrap()
+                        .write_all(s.as_ref())
+                        .expect("TODO: panic message");}
+                Err(_) => {
+                    let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
+                    json.push(UploadedFile {
+                        path: file_path.as_os_str().to_str().unwrap().to_string(),
+                        deletion_url,
+                        name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
+                        size: 0i64,
+                        url,
+                    });
+                    let s = serde_json::to_string(&json).unwrap().to_string();
+                    File::create(&path)
+                        .unwrap()
+                        .write_all(s.as_ref())
+                        .expect("TODO: panic message");
+                }
+            }
+
         }
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
             File::create(&path)
