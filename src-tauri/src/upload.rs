@@ -52,6 +52,8 @@ pub fn upload_file_to_host(file: &Path, app_handle: &tauri::AppHandle) {
         );
         return;
     }
+    // sentry::capture_message(file.to_str().unwrap(), Level::Info);
+
     match Part::file(file) {
         Ok(part_file) => {
             let client = Client::builder()
@@ -63,9 +65,12 @@ pub fn upload_file_to_host(file: &Path, app_handle: &tauri::AppHandle) {
                 .header("key", config.api_key)
                 .multipart(Form::new().part("file", part_file))
                 .send();
+            // sentry::capture_message("Request has been sent", Level::Info);
 
             match request {
                 Ok(data) => {
+                    // sentry::capture_message("The data is ok", Level::Info);
+
                     match data.status() {
                         reqwest::StatusCode::OK => {
                             let response = data
@@ -74,18 +79,17 @@ pub fn upload_file_to_host(file: &Path, app_handle: &tauri::AppHandle) {
                             let mut clipboard = Clipboard::new().unwrap();
                             let url = response.imageUrl.clone();
                             match clipboard.set_text(response.imageUrl) {
-                                Ok {..} => {
+                                Ok { .. } => {
                                     if !config.auto_wipe {
                                         add_file_data(app_handle, file, response.deletionUrl, url)
                                     };
                                     utils::add_int_to_uploaded_files(app_handle);
                                     display_successful_notification(app_handle);
-                                },
-                                Err (err) => {
+                                }
+                                Err(err) => {
                                     display_error_message(app_handle);
                                     sentry::capture_error(&err);
                                 }
-
                             };
                         }
                         reqwest::StatusCode::UNAUTHORIZED => {
@@ -103,17 +107,17 @@ pub fn upload_file_to_host(file: &Path, app_handle: &tauri::AppHandle) {
                     display_no_internet_notification(app_handle);
                 }
             }
-        },
-        Err(_) => println!("file doesnt exist")
+        }
+        Err(_) => {
+            // sentry::capture_message("A file did not exist", Level::Info);
+            println!("file doesnt exist")
+        }
     }
-
 
     if config.auto_wipe {
         delete_file(file);
     }
-
 }
-
 
 fn display_successful_notification(app_handle: &tauri::AppHandle) {
     Notification::new(app_handle.config().tauri.bundle.identifier.clone())
@@ -145,40 +149,38 @@ fn add_file_data(app_handle: &AppHandle, file_path: &Path, deletion_url: String,
         .unwrap()
         .join("uploaded_files.json");
     match fs::read_to_string(&path) {
-        Ok(cfg) => {
-            match file_path.symlink_metadata() {
-                Ok(file_meta) => {
-                    let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
-                    json.push(UploadedFile {
-                        path: file_path.as_os_str().to_str().unwrap().to_string(),
-                        deletion_url,
-                        name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
-                        size: file_meta.len() as i64,
-                        url,
-                    });
-                    let s = serde_json::to_string(&json).unwrap().to_string();
-                    File::create(&path)
-                        .unwrap()
-                        .write_all(s.as_ref())
-                        .expect("TODO: panic message");}
-                Err(_) => {
-                    let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
-                    json.push(UploadedFile {
-                        path: file_path.as_os_str().to_str().unwrap().to_string(),
-                        deletion_url,
-                        name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
-                        size: 0i64,
-                        url,
-                    });
-                    let s = serde_json::to_string(&json).unwrap().to_string();
-                    File::create(&path)
-                        .unwrap()
-                        .write_all(s.as_ref())
-                        .expect("TODO: panic message");
-                }
+        Ok(cfg) => match file_path.symlink_metadata() {
+            Ok(file_meta) => {
+                let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
+                json.push(UploadedFile {
+                    path: file_path.as_os_str().to_str().unwrap().to_string(),
+                    deletion_url,
+                    name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
+                    size: file_meta.len() as i64,
+                    url,
+                });
+                let s = serde_json::to_string(&json).unwrap().to_string();
+                File::create(&path)
+                    .unwrap()
+                    .write_all(s.as_ref())
+                    .expect("TODO: panic message");
             }
-
-        }
+            Err(_) => {
+                let mut json: Vec<UploadedFile> = serde_json::from_str(cfg.as_str()).unwrap();
+                json.push(UploadedFile {
+                    path: file_path.as_os_str().to_str().unwrap().to_string(),
+                    deletion_url,
+                    name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
+                    size: 0i64,
+                    url,
+                });
+                let s = serde_json::to_string(&json).unwrap().to_string();
+                File::create(&path)
+                    .unwrap()
+                    .write_all(s.as_ref())
+                    .expect("TODO: panic message");
+            }
+        },
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
             File::create(&path)
                 .unwrap()

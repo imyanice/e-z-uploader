@@ -1,6 +1,6 @@
 [package]
 name = "e-z-uploader"
-version = "2.0.2"
+version = "2.0.4"
 description = "E-Z screenshot uploader"
 authors = ["imyanice"]
 license = "GPL-v3"
@@ -43,4 +43,4 @@ codegen-units = 1 # Compile crates one after another so the compiler can optimiz
 lto = true # Enables link to optimizations
 opt-level = "s" # Optimize for binary size
 strip = true # Strip unneeded stuff
-
+debug = "full"

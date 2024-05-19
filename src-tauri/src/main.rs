@@ -10,12 +10,12 @@ mod listeners;
 mod upload;
 mod utils;
 
-use std::thread;
-use sentry::User;
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
-use tauri::regex::Regex;
-use tauri_plugin_autostart::MacosLauncher;
 use crate::utils::get_screenshot_dir;
+use sentry::User;
+use std::thread;
+use tauri::regex::Regex;
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri_plugin_autostart::MacosLauncher;
 
 fn main() {
     let _guard = sentry::init(("", sentry::ClientOptions {
@@ -73,7 +73,6 @@ fn main() {
                 ..Default::default()
             });
         }
-
     }
     sentry::configure_scope(|scope| {
         scope.set_user(user.clone());
@@ -113,7 +112,6 @@ fn main() {
             }
         }
     });
-
 }
 
 fn get_system_tray() -> SystemTray {

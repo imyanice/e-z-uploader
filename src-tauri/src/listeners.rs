@@ -1,4 +1,4 @@
-use notify::event::{CreateKind};
+use notify::event::{ModifyKind, RenameMode};
 use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::sync::mpsc::channel;
 
@@ -22,7 +22,8 @@ pub fn watch_file_system(app: tauri::AppHandle) {
         for res in &rx {
             match res {
                 Ok(event) => {
-                    if event.kind == EventKind::Create(CreateKind::File)
+                    println!("{:?}", event);
+                    if (event.kind != EventKind::Modify(ModifyKind::Name(RenameMode::Any)))
                         && last_image != event.paths[0].to_str().unwrap()
                         && files::is_image(&event.paths[0])
                     {
