@@ -1,3 +1,7 @@
+*.app
+*.dSYM
+build/
+uploader
 # Logs
 logs
 *.log
