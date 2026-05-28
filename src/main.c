@@ -23,23 +23,35 @@ void callback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
 		if (!has_flag(flags, kFSEventStreamEventFlagItemIsFile))
 			continue;
 		size_t path_parts_length = 0;
-		char **path_parts = split(strdup(paths[i]), "/", &path_parts_length);
+		char *duped_path = strdup(paths[i]);
+		char **path_parts = split(duped_path, "/", &path_parts_length);
 		char *filename = path_parts[path_parts_length - 1];
-		if (filename[0] == '.' || filename[0] == '\0')
+		if (filename[0] == '.' || filename[0] == '\0') {
+			free(duped_path);
+			free(path_parts);
 			continue;
+		}
 		if (!has_flag(flags, kFSEventStreamEventFlagItemCreated) &&
-			!has_flag(flags, kFSEventStreamEventFlagItemRenamed))
+			!has_flag(flags, kFSEventStreamEventFlagItemRenamed)) {
+			free(duped_path);
+			free(path_parts);
 			continue;
+		}
 		struct stat candidate_state = {0};
 		if (lstat(paths[i], &candidate_state) == -1) {
 			perror("error with lstat");
+			free(duped_path);
+			free(path_parts);
 			continue;
 		}
 
 		time_t now = time(NULL);
 		long dt = labs(now - candidate_state.st_birthtimespec.tv_sec);
-		if (dt > 5)
+		if (dt > 5) {
+			free(duped_path);
+			free(path_parts);
 			continue;
+		}
 
 		printf("'%s': flag: %04x, id: %llu, birth: %li\n",
 			   path_parts[path_parts_length - 1], eventFlags[i], eventIds[i],
@@ -50,6 +62,8 @@ void callback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
 		if (upload_file(paths[i], get_api_key_header_c()) && autodelete) {
 			unlink(paths[i]);
 		};
+		free(duped_path);
+		free(path_parts);
 	}
 }
 

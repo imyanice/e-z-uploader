@@ -28,9 +28,9 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 		while (data[(*cursor_ptr)] != '}') {
 			ADVANCE_CURSOR(data, (*cursor_ptr));
 			if (data[(*cursor_ptr)] != '"') {
-				printf("58 | format error at cursor pos: %zu, expected `\"`\n",
+				printf("format error at cursor pos: %zu, expected `\"`\n",
 					   (*cursor_ptr));
-				free(element);
+				JSON_free(element);
 				return NULL;
 			}
 
@@ -53,7 +53,8 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 			if (data[(*cursor_ptr)] != ':') {
 				printf("format error at cursor pos: %zu, expected `:`\n",
 					   (*cursor_ptr));
-				free(element);
+				JSON_free(element);
+				free(key);
 				return NULL;
 			}
 			(*cursor_ptr)++;
@@ -62,21 +63,24 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 			JSONElement *child = _JSON_parse(data, cursor_ptr);
 			if (!child) {
 				// the child errored
+				JSON_free(element);
+				free(key);
 				return NULL;
 			}
 
 			child->key = key;
 
 			if (element->child_count == 0) {
-				element->value.object = malloc(sizeof(JSONElement));
+				element->value.object = malloc(sizeof(JSONElement *));
 			} else {
 				element->value.object =
 					realloc(element->value.object,
-							(element->child_count + 1) * sizeof(JSONElement));
+							(element->child_count + 1) * sizeof(JSONElement *));
 			}
 
 			if (!element->value.object) {
 				perror("out of memory");
+				free(key);
 				free(element);
 				return NULL;
 			}
@@ -92,6 +96,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 					printf("format error at cursor pos: %zu, expected "
 						   "JSONElement\n",
 						   (*cursor_ptr));
+					free(key);
 					free(element);
 					return NULL;
 				}
@@ -103,7 +108,8 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 						   "`}`, but "
 						   "found `%c`\n",
 						   (*cursor_ptr), data[(*cursor_ptr)]);
-					free(element);
+					free(key);
+					JSON_free(element);
 					return NULL;
 				}
 			}
@@ -127,15 +133,15 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 			}
 
 			if (element->child_count == 0) {
-				element->value.array = malloc(sizeof(JSONElement));
+				element->value.array = malloc(sizeof(JSONElement *));
 			} else {
 				element->value.array =
 					realloc(element->value.array,
-							(element->child_count + 1) * sizeof(JSONElement));
+							(element->child_count + 1) * sizeof(JSONElement *));
 			}
 			if (!element->value.array) {
 				perror("out of memory");
-				free(element);
+				JSON_free(element);
 				return NULL;
 			}
 
@@ -150,7 +156,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 					printf("format error at cursor pos: %zu, expected "
 						   "JSONElement\n",
 						   (*cursor_ptr));
-					free(element);
+					JSON_free(element);
 					return NULL;
 				}
 			} else {
@@ -161,7 +167,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 						   "`]`, but "
 						   "found `%c`\n",
 						   (*cursor_ptr), data[(*cursor_ptr)]);
-					free(element);
+					JSON_free(element);
 					return NULL;
 				}
 			}

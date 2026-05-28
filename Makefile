@@ -7,11 +7,11 @@ FRAMEWORKS = \
 -framework Foundation \
 -framework CoreServices
 LIBS = -lcurl
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -Iinclude
 build/%.o: src/%.c | build
 	clang -c $< -o $@ $(CFLAGS)
 build/%.o: src/%.m | build
-	clang -c $< -o $@ $(CFLAGS)
+	clang -c $< -o $@ $(CFLAGS) -fobjc-arc
 
 uploader: $(OBJS)
 	clang $^ -o $@ -g $(LIBS) $(FRAMEWORKS) $(CFLAGS)

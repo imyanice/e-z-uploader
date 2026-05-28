@@ -4,7 +4,6 @@
 #import <UserNotifications/UserNotifications.h>
 static bool autodelete = NO;
 static char *api_key_header = NULL;
-
 NSString *get_api_key(void) { return [[NSUserDefaults standardUserDefaults] stringForKey:@"key"]; }
 void set_api_key(NSString *val) {
     [[NSUserDefaults standardUserDefaults] setValue:val forKeyPath:@"key"];
@@ -12,6 +11,7 @@ void set_api_key(NSString *val) {
 void set_autodelete(BOOL val) {
     return [[NSUserDefaults standardUserDefaults] setBool:val forKey:@"autodelete"];
 }
+
 bool get_autodelete(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"autodelete"];
 }
@@ -33,9 +33,34 @@ void update_prefs(void) {
     NSLog(@"%s", api_key_header);
     NSLog(@"autodelete: %s", autodelete ? "YES" : "NO");
 }
-@interface DeleteFileDelegate : NSObject <UNUserNotificationCenterDelegate>
+@interface NotificationHandler : NSObject <UNUserNotificationCenterDelegate>
++ (instancetype)sharedDelegate;
+- (void)setup;
 @end
-@implementation DeleteFileDelegate
+@implementation NotificationHandler
++ (instancetype)sharedDelegate {
+    static NotificationHandler *sharedController = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ sharedController = [[NotificationHandler alloc] init]; });
+    return sharedController;
+}
+- (void)setup {
+
+    UNNotificationAction *delete_action =
+        [UNNotificationAction actionWithIdentifier:@"DELETE_FILE"
+                                             title:@"Delete"
+                                           options:(UNNotificationActionOptionDestructive)];
+    UNNotificationCategory *not_cat = [UNNotificationCategory
+        categoryWithIdentifier:@"DELETE_CAT"
+                       actions:@[ delete_action ]
+             intentIdentifiers:@[]
+                       options:UNNotificationCategoryOptionCustomDismissAction];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+
+    center.delegate = self;
+    [center setNotificationCategories:[NSSet setWithArray:@[ not_cat ]]];
+}
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
     didReceiveNotificationResponse:(UNNotificationResponse *)response
              withCompletionHandler:(void (^)(void))completionHandler {
@@ -144,24 +169,10 @@ void setupMainMenu(void) {
 void uploader_init() {
     [NSApplication sharedApplication];
     [[NSProcessInfo processInfo] disableSuddenTermination];
-
-    UNNotificationAction *delete_action =
-        [UNNotificationAction actionWithIdentifier:@"DELETE_FILE"
-                                             title:@"Delete"
-                                           options:(UNNotificationActionOptionDestructive)];
-    UNNotificationCategory *not_cat = [UNNotificationCategory
-        categoryWithIdentifier:@"DELETE_CAT"
-                       actions:@[ delete_action ]
-             intentIdentifiers:@[]
-                       options:UNNotificationCategoryOptionCustomDismissAction];
-
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-
-    center.delegate = DeleteFileDelegate.alloc;
-    [center setNotificationCategories:[NSSet setWithArray:@[ not_cat ]]];
-
     [[NSUserDefaults standardUserDefaults] registerDefaults:@{@"key" : @"", @"autodelete" : @NO}];
     update_prefs();
+
+    [[NotificationHandler sharedDelegate] setup];
     [[StatusBarActionController sharedController] setup];
 
     setupMainMenu();

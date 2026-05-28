@@ -53,10 +53,12 @@ char **split(char *string, const char *delim, size_t *rl) {
 	char *start;
 	while ((start = strsep(&string, delim)) != NULL) {
 		if (res_i >= bi) {
-			res = realloc(res, bi * 2);
-			if (!res)
+			res = realloc(res, bi * 2 * sizeof(char *));
+			if (!res) {
 				perror("out of memory");
-			bi = bi * 2 + 1;
+				return NULL;
+			}
+			bi = bi * 2;
 		}
 		res[res_i++] = start;
 	}

@@ -19,6 +19,7 @@ bool upload_file(char *path, const char *key_header) {
 		return false;
 
 	bool success = false;
+	JSONElement *JSON_response = NULL;
 	curl_body.len = 0;
 
 	struct curl_slist *headers = curl_slist_append(NULL, key_header);
@@ -59,7 +60,7 @@ bool upload_file(char *path, const char *key_header) {
 		goto cleanup;
 	}
 
-	JSONElement *JSON_response = JSON_parse((char *)curl_body.data);
+	JSON_response = JSON_parse((char *)curl_body.data);
 
 	JSONElement *image_url = JSON_get("imageUrl", JSON_response);
 	if (!image_url || image_url->JSONType != JSONType_STRING) {
@@ -79,13 +80,14 @@ bool upload_file(char *path, const char *key_header) {
 	display_notification("File uploaded!",
 						 "The URL has been copied to your clipboard",
 						 deletion_url->value.string);
-	JSON_free(JSON_response);
 	success = true;
 	goto cleanup;
 /* cleanup */
 cleanup:
+	JSON_free(JSON_response);
 	curl_slist_free_all(headers);
 	curl_mime_free(cmime);
+	curl_easy_reset(curl);
 	return success;
 }
 
