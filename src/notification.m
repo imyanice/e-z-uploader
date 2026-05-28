@@ -2,6 +2,35 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
+
+@interface Store : NSObject
++ (instancetype)sharedStore;
+- (NSString *)get_api_key;
+- (void)set_api_key:(NSString *)val;
+- (BOOL)get_autodelete;
+- (void)set_autodelete:(BOOL)val;
+@end
+@implementation Store : NSObject
++ (instancetype)sharedStore {
+    static Store *sharedStore = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ sharedStore = [[Store alloc] init]; });
+    return sharedStore;
+}
+- (NSString *)get_api_key {
+    return [[NSUserDefaults standardUserDefaults] stringForKey:@"key"];
+}
+- (void)set_api_key:(NSString *)val {
+    return [[NSUserDefaults standardUserDefaults] setValue:val forKeyPath:@"key"];
+}
+- (void)set_autodelete:(BOOL)val {
+    return [[NSUserDefaults standardUserDefaults] setBool:val forKey:@"autodelete"];
+}
+- (BOOL)get_autodelete {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"autodelete"];
+}
+@end
+
 @interface DeleteFileDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 @implementation DeleteFileDelegate
@@ -10,11 +39,92 @@
              withCompletionHandler:(void (^)(void))completionHandler {
 
     NSString *url = response.notification.request.content.userInfo[@"DELETION_URL"];
-    delete_remote_file(url.cString);
+    delete_remote_file([url cStringUsingEncoding:NSUTF8StringEncoding]);
     completionHandler();
 }
 @end
 
+@interface StatusBarActionController : NSMenu
++ (instancetype)sharedController;
+- (void)handle_api_key_item:(id)sender;
+- (void)setup;
+@end
+@implementation StatusBarActionController
++ (instancetype)sharedController {
+    static StatusBarActionController *sharedController = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ sharedController = [[StatusBarActionController alloc] init]; });
+    return sharedController;
+}
+- (void)setup {
+    NSStatusItem *status_item =
+        [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    [status_item button].alternateImage = nil;
+
+    NSImage *tray_icon = [NSImage imageNamed:@"tray.png"];
+    CGFloat height = 18.0;
+    NSSize new_size = {.height = height,
+                       .width = (height * tray_icon.size.width) / tray_icon.size.height};
+    [tray_icon setSize:new_size];
+    [status_item button].image = tray_icon;
+
+    NSMenu *tray_menu = [[NSMenu alloc] initWithTitle:@"E-Z Uploader"];
+    NSMenuItem *fake_title = [[NSMenuItem alloc] initWithTitle:@"E-Z Uploader"
+                                                        action:NULL
+                                                 keyEquivalent:@""];
+    fake_title.enabled = NO;
+
+    NSMenuItem *set_key = [[NSMenuItem alloc] initWithTitle:@"Set API Key"
+                                                     action:@selector(handle_api_key_item:)
+                                              keyEquivalent:@","];
+    [set_key setTarget:self];
+    [tray_menu addItem:fake_title];
+    [tray_menu addItem:[NSMenuItem separatorItem]];
+    [tray_menu addItem:set_key];
+    [status_item setMenu:tray_menu];
+}
+- (void)handle_api_key_item:(id)sender {
+    [NSApp activateIgnoringOtherApps:YES];
+    NSTextField *api_key_field = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 300, 22)];
+    api_key_field.placeholderString = @"API Key";
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert addButtonWithTitle:@"Save"];
+    [alert addButtonWithTitle:@"Cancel"];
+
+    alert.messageText = @"API Key";
+    [alert setInformativeText:@"Set your upload API Key. Get it @ https://e-z.gg"];
+    alert.accessoryView = api_key_field;
+    NSInteger button = [alert runModal];
+    if (button == NSAlertFirstButtonReturn) {
+        NSLog(@"%@", [api_key_field stringValue]);
+        [[Store sharedStore] set_api_key:[api_key_field stringValue]];
+    }
+}
+@end
+
+void setupMainMenu(void) {
+    NSMenu *mainMenu = [[NSMenu alloc] init];
+
+    NSMenuItem *appMenuItem = [[NSMenuItem alloc] init];
+    [mainMenu addItem:appMenuItem];
+    NSMenu *appMenu = [[NSMenu alloc] init];
+    [appMenu addItemWithTitle:@"Quit Scrubble" action:@selector(terminate:) keyEquivalent:@"q"];
+    [appMenuItem setSubmenu:appMenu];
+
+    NSMenuItem *editMenuItem = [[NSMenuItem alloc] init];
+    [mainMenu addItem:editMenuItem];
+    NSMenu *editMenu = [[NSMenu alloc] initWithTitle:@"Edit"];
+    [editMenu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@"z"];
+    [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
+    [editMenu addItem:[NSMenuItem separatorItem]];
+    [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+    [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+    [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
+    [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
+    [editMenuItem setSubmenu:editMenu];
+
+    [NSApp setMainMenu:mainMenu];
+}
 void uploader_init() {
     [NSApplication sharedApplication];
     [[NSProcessInfo processInfo] disableSuddenTermination];
@@ -33,6 +143,10 @@ void uploader_init() {
 
     center.delegate = DeleteFileDelegate.alloc;
     [center setNotificationCategories:[NSSet setWithArray:@[ not_cat ]]];
+
+    [[StatusBarActionController sharedController] setup];
+
+    setupMainMenu();
 }
 void uploader_run(void) { [NSApp run]; }
 
