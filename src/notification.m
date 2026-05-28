@@ -3,33 +3,16 @@
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
 
-@interface Store : NSObject
-+ (instancetype)sharedStore;
-- (NSString *)get_api_key;
-- (void)set_api_key:(NSString *)val;
-- (BOOL)get_autodelete;
-- (void)set_autodelete:(BOOL)val;
-@end
-@implementation Store : NSObject
-+ (instancetype)sharedStore {
-    static Store *sharedStore = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{ sharedStore = [[Store alloc] init]; });
-    return sharedStore;
-}
-- (NSString *)get_api_key {
-    return [[NSUserDefaults standardUserDefaults] stringForKey:@"key"];
-}
-- (void)set_api_key:(NSString *)val {
+NSString *get_api_key(void) { return [[NSUserDefaults standardUserDefaults] stringForKey:@"key"]; }
+void set_api_key(NSString *val) {
     return [[NSUserDefaults standardUserDefaults] setValue:val forKeyPath:@"key"];
 }
-- (void)set_autodelete:(BOOL)val {
+void set_autodelete(BOOL val) {
     return [[NSUserDefaults standardUserDefaults] setBool:val forKey:@"autodelete"];
 }
-- (BOOL)get_autodelete {
+BOOL get_autodelete(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"autodelete"];
 }
-@end
 
 @interface DeleteFileDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
@@ -97,8 +80,10 @@
     NSInteger button = [alert runModal];
     if (button == NSAlertFirstButtonReturn) {
         NSLog(@"%@", [api_key_field stringValue]);
-        [[Store sharedStore] set_api_key:[api_key_field stringValue]];
+        set_api_key([api_key_field stringValue]);
     }
+    [alert release];
+    [api_key_field release];
 }
 @end
 
