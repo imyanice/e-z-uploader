@@ -2,6 +2,7 @@
 #include "notification.h"
 #include "utils.h"
 #include <curl/curl.h>
+#include <stdbool.h>
 #include <string.h>
 static vector curl_body = {.data = NULL, .len = 0, .size = 0};
 
@@ -13,12 +14,14 @@ void delete_remote_file(const char *url) {
 	curl_easy_perform(curl);
 }
 
-void upload_file(char *path) {
+bool upload_file(char *path, const char *key_header) {
 	if (!path)
-		return;
+		return false;
+
+	bool success = false;
 	curl_body.len = 0;
 
-	struct curl_slist *headers = curl_slist_append(NULL, "key: ");
+	struct curl_slist *headers = curl_slist_append(NULL, key_header);
 
 	curl_mime *cmime = curl_mime_init(curl);
 	curl_mimepart *file_part = curl_mime_addpart(cmime);
@@ -77,12 +80,13 @@ void upload_file(char *path) {
 						 "The URL has been copied to your clipboard",
 						 deletion_url->value.string);
 	JSON_free(JSON_response);
+	success = true;
 	goto cleanup;
 /* cleanup */
 cleanup:
 	curl_slist_free_all(headers);
 	curl_mime_free(cmime);
-	return;
+	return success;
 }
 
 bool fetch_init() {

@@ -2,18 +2,37 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
+static bool autodelete = NO;
+static char *api_key_header = NULL;
 
 NSString *get_api_key(void) { return [[NSUserDefaults standardUserDefaults] stringForKey:@"key"]; }
 void set_api_key(NSString *val) {
-    return [[NSUserDefaults standardUserDefaults] setValue:val forKeyPath:@"key"];
+    [[NSUserDefaults standardUserDefaults] setValue:val forKeyPath:@"key"];
 }
 void set_autodelete(BOOL val) {
     return [[NSUserDefaults standardUserDefaults] setBool:val forKey:@"autodelete"];
 }
-BOOL get_autodelete(void) {
+bool get_autodelete(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"autodelete"];
 }
 
+bool get_autodelete_c(void) { return autodelete; }
+const char *get_api_key_header_c() { return api_key_header; }
+
+void update_prefs(void) {
+    autodelete = get_autodelete();
+
+    NSString *key = get_api_key();
+    if (!key)
+        key = @"";
+    NSString *header = [@"key: " stringByAppendingString:key];
+
+    free(api_key_header);
+    api_key_header = strdup([header UTF8String]);
+
+    NSLog(@"%s", api_key_header);
+    NSLog(@"autodelete: %s", autodelete ? "YES" : "NO");
+}
 @interface DeleteFileDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 @implementation DeleteFileDelegate
@@ -28,6 +47,7 @@ BOOL get_autodelete(void) {
 @end
 
 @interface StatusBarActionController : NSMenu
+@property(strong) NSMenuItem *enable_autodelete;
 + (instancetype)sharedController;
 - (void)handle_api_key_item:(id)sender;
 - (void)setup;
@@ -61,9 +81,17 @@ BOOL get_autodelete(void) {
                                                      action:@selector(handle_api_key_item:)
                                               keyEquivalent:@","];
     [set_key setTarget:self];
+
+    _enable_autodelete = [[NSMenuItem alloc] initWithTitle:@"Autodelete files"
+                                                    action:@selector(handle_enable_autodelete:)
+                                             keyEquivalent:@""];
+    _enable_autodelete.state = autodelete ? NSControlStateValueOn : NSControlStateValueOff;
+    [_enable_autodelete setTarget:self];
+
     [tray_menu addItem:fake_title];
     [tray_menu addItem:[NSMenuItem separatorItem]];
     [tray_menu addItem:set_key];
+    [tray_menu addItem:_enable_autodelete];
     [status_item setMenu:tray_menu];
 }
 - (void)handle_api_key_item:(id)sender {
@@ -79,11 +107,14 @@ BOOL get_autodelete(void) {
     alert.accessoryView = api_key_field;
     NSInteger button = [alert runModal];
     if (button == NSAlertFirstButtonReturn) {
-        NSLog(@"%@", [api_key_field stringValue]);
         set_api_key([api_key_field stringValue]);
+        update_prefs();
     }
-    [alert release];
-    [api_key_field release];
+}
+- (void)handle_enable_autodelete:(id)sender {
+    set_autodelete(!autodelete);
+    _enable_autodelete.state = !autodelete ? NSControlStateValueOn : NSControlStateValueOff;
+    update_prefs();
 }
 @end
 
@@ -129,6 +160,8 @@ void uploader_init() {
     center.delegate = DeleteFileDelegate.alloc;
     [center setNotificationCategories:[NSSet setWithArray:@[ not_cat ]]];
 
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{@"key" : @"", @"autodelete" : @NO}];
+    update_prefs();
     [[StatusBarActionController sharedController] setup];
 
     setupMainMenu();

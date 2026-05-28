@@ -44,7 +44,12 @@ void callback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
 		printf("'%s': flag: %04x, id: %llu, birth: %li\n",
 			   path_parts[path_parts_length - 1], eventFlags[i], eventIds[i],
 			   candidate_state.st_birthtimespec.tv_sec);
-		upload_file(paths[i]);
+		bool autodelete = get_autodelete_c();
+		printf("[C] - Making request with %s\n", get_api_key_header_c());
+		printf("[C] - Autodelete: %s\n", get_autodelete_c() ? "YES" : "NO");
+		if (upload_file(paths[i], get_api_key_header_c()) && autodelete) {
+			unlink(paths[i]);
+		};
 	}
 }
 
