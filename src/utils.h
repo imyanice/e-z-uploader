@@ -6,9 +6,9 @@
 #define UPLOADER_UTILS_H
 
 typedef struct {
-  uint8_t *data;
-  ssize_t len;
-  ssize_t size;
+	uint8_t *data;
+	ssize_t len;
+	ssize_t size;
 } vector;
 void release_vector(vector **vec);
 

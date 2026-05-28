@@ -5,26 +5,26 @@
 #define UPLOADER_JSON_H
 
 #define JSON_key(s)                                                            \
-  (char[]) { s }
+	(char[]) { s }
 
 struct JSONElement {
-  char *key;
-  enum {
-    JSONType_NULL,
-    JSONType_BOOLEAN,
-    JSONType_NUMBER,
-    JSONType_STRING,
-    JSONType_OBJECT,
-    JSONType_ARRAY
-  } JSONType;
-  union JSONValue {
-    bool boolean;
-    double number;
-    char *string;
-    struct JSONElement **object;
-    struct JSONElement **array;
-  } value;
-  size_t child_count; // only applicable for objects and arrays
+	char *key;
+	enum {
+		JSONType_NULL,
+		JSONType_BOOLEAN,
+		JSONType_NUMBER,
+		JSONType_STRING,
+		JSONType_OBJECT,
+		JSONType_ARRAY
+	} JSONType;
+	union JSONValue {
+		bool boolean;
+		double number;
+		char *string;
+		struct JSONElement **object;
+		struct JSONElement **array;
+	} value;
+	size_t child_count; // only applicable for objects and arrays
 };
 typedef struct JSONElement JSONElement;
 
