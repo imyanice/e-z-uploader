@@ -6,6 +6,7 @@
 @property(strong) NSMenuItem *shottr_location;
 @property(strong) NSMenuItem *screenshot_location;
 @property(strong) NSMenuItem *cleanshotx_location;
+@property(strong) NSMenuItem *toggle_launch_agent;
 + (instancetype)sharedController;
 - (void)handle_api_key_item:(id)sender;
 - (void)setup;

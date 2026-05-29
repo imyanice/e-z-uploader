@@ -1,6 +1,7 @@
 #import "objc/statusbar.h"
 #import "files.h"
 #import "objc/config.h"
+#import "objc/launchagent.h"
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
@@ -86,6 +87,13 @@
                                                                   action:NULL
                                                            keyEquivalent:@""];
 
+    _toggle_launch_agent = [[NSMenuItem alloc] initWithTitle:@"Launch at Login"
+                                                      action:@selector(handle_toggle_launch_agent:)
+                                               keyEquivalent:@""];
+    [_toggle_launch_agent setTarget:self];
+    _toggle_launch_agent.state =
+        isLaunchAgentInstalled() ? NSControlStateValueOn : NSControlStateValueOff;
+
     NSMenuItem *quit_item = [[NSMenuItem alloc] initWithTitle:@"Quit"
                                                        action:@selector(terminate:)
                                                 keyEquivalent:@"q"];
@@ -99,6 +107,7 @@
     [tray_menu addItem:_enable_autodelete];
     [tray_menu addItem:location_menu_holder];
     [tray_menu addItem:[NSMenuItem separatorItem]];
+    [tray_menu addItem:_toggle_launch_agent];
     [tray_menu addItem:quit_item];
 
     NSStatusItem *status_item =
@@ -178,5 +187,10 @@
     update_prefs();
 
     watch_directory(watch_path);
+}
+- (void)handle_toggle_launch_agent:(id)sender {
+    toggle_launch_agent();
+    _toggle_launch_agent.state =
+        isLaunchAgentInstalled() ? NSControlStateValueOn : NSControlStateValueOff;
 }
 @end
