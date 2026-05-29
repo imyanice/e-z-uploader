@@ -1,0 +1,7 @@
+{
+  "file_types": {
+    "Objective-C": [
+      "include/objc/**/*.h"
+    ]
+  }
+}

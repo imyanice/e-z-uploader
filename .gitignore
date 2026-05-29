@@ -2,6 +2,8 @@
 *.dSYM
 build/
 uploader
+compile_commands.json
+.cache
 # Logs
 logs
 *.log

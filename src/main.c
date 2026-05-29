@@ -1,6 +1,7 @@
+#include "config.h"
+#include "controller.h"
 #include "fetch.h"
 #include "json.h"
-#include "notification.h"
 #include "utils.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
@@ -56,10 +57,9 @@ void callback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
 		printf("'%s': flag: %04x, id: %llu, birth: %li\n",
 			   path_parts[path_parts_length - 1], eventFlags[i], eventIds[i],
 			   candidate_state.st_birthtimespec.tv_sec);
-		bool autodelete = get_autodelete_c();
-		printf("[C] - Making request with %s\n", get_api_key_header_c());
-		printf("[C] - Autodelete: %s\n", get_autodelete_c() ? "YES" : "NO");
-		if (upload_file(paths[i], get_api_key_header_c()) && autodelete) {
+		printf("[C] - Making request with %s\n", api_key_header);
+		printf("[C] - Autodelete: %s\n", autodelete ? "YES" : "NO");
+		if (upload_file(paths[i], api_key_header) && autodelete) {
 			unlink(paths[i]);
 		};
 		free(duped_path);

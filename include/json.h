@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #ifndef UPLOADER_JSON_H
-#define UPLOADER_JSON_H
+#define UPLOADER_JSON_H 1
 
 #define JSON_key(s)                                                            \
 	(char[]) { s }
