@@ -25,6 +25,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 	if (data[(*cursor_ptr)] == '{') {
 		(*cursor_ptr)++;
 		element->JSONType = JSONType_OBJECT;
+		element->value.object = NULL;
 		while (data[(*cursor_ptr)] != '}') {
 			ADVANCE_CURSOR(data, (*cursor_ptr));
 			if (data[(*cursor_ptr)] != '"') {
@@ -81,7 +82,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 			if (!element->value.object) {
 				perror("out of memory");
 				free(key);
-				free(element);
+				JSON_free(element);
 				return NULL;
 			}
 
@@ -97,7 +98,7 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 						   "JSONElement\n",
 						   (*cursor_ptr));
 					free(key);
-					free(element);
+					JSON_free(element);
 					return NULL;
 				}
 			} else {
@@ -123,12 +124,14 @@ JSONElement *_JSON_parse(char *data, size_t *cursor_ptr) {
 		(*cursor_ptr)++;
 		element->JSONType = JSONType_ARRAY;
 		element->key = NULL;
+		element->value.array = NULL;
 		while (data[(*cursor_ptr)] != ']') {
 			ADVANCE_CURSOR(data, (*cursor_ptr));
 
 			JSONElement *child = _JSON_parse(data, cursor_ptr);
 			if (!child) {
 				// the child errored
+				JSON_free(element);
 				return NULL;
 			}
 
@@ -312,6 +315,8 @@ JSONElement *JSON_get(char *key, JSONElement *element) {
 }
 
 void JSON_free(JSONElement *element) {
+	if (!element)
+		return;
 	if (element->JSONType == JSONType_ARRAY ||
 		element->JSONType == JSONType_OBJECT) {
 		size_t i = 0;

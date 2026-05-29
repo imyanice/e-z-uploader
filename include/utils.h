@@ -12,7 +12,6 @@ typedef struct {
 } vector;
 void release_vector(vector **vec);
 
-vector *get_vector(size_t size, uint8_t *initial_data, size_t initial_data_len);
 size_t cwrite_data(char *buf, size_t size, size_t nmenb, vector *vec);
 char **split(char *string, const char *delim, size_t *rl);
 bool includes_string(int c, char **strs, char *incl);

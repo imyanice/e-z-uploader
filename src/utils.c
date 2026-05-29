@@ -12,26 +12,12 @@ void release_vector(vector **vec) {
 	}
 }
 
-vector *get_vector(size_t size, uint8_t *initial_data,
-				   size_t initial_data_len) {
-	vector *vec = malloc(sizeof(vector));
-	vec->data = malloc(size);
-	if (!vec->data) {
-		free(vec);
-		return NULL;
-	}
-	vec->size = size;
-	vec->len = 0;
-	if (initial_data) {
-		memcpy(vec->data, initial_data, initial_data_len);
-	}
-	return vec;
-}
 size_t append_vector(vector *vec, uint8_t *data, size_t nb) {
 	if ((ssize_t)(nb + vec->len) >= vec->size) {
-		vec->data = realloc(vec->data, (nb + vec->len) * 2);
-		if (!vec->data)
+		void *tmp = realloc(vec->data, (nb + vec->len) * 2);
+		if (!tmp)
 			return 0;
+		vec->data = tmp;
 		vec->size = (nb + vec->len) * 2;
 	}
 	memcpy(vec->data + vec->len, data, nb);
@@ -53,11 +39,13 @@ char **split(char *string, const char *delim, size_t *rl) {
 	char *start;
 	while ((start = strsep(&string, delim)) != NULL) {
 		if (res_i >= bi) {
-			res = realloc(res, bi * 2 * sizeof(char *));
-			if (!res) {
+			void *tmp = realloc(res, bi * 2 * sizeof(char *));
+			if (!tmp) {
+				free(res);
 				perror("out of memory");
 				return NULL;
 			}
+			res = tmp;
 			bi = bi * 2;
 		}
 		res[res_i++] = start;

@@ -85,7 +85,9 @@ void watch_directory(char *path) {
 			"me.yanice.e-z-uploader.file-watcher", DISPATCH_QUEUE_SERIAL);
 	}
 
-	FSEventStreamRetain(current_fs_stream);
 	FSEventStreamSetDispatchQueue(current_fs_stream, file_creation_queue);
 	FSEventStreamStart(current_fs_stream);
+
+	CFRelease(path_cfstr);
+	CFRelease(paths);
 }
