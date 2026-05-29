@@ -101,6 +101,6 @@ static off_t folder_size_fd(int dfd) {
 off_t folder_size(const char *path) {
 	int fd = open(path, O_RDONLY | O_DIRECTORY);
 	if (fd < 0)
-		return -1;
+		return 0;
 	return folder_size_fd(fd);
 }

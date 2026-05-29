@@ -11,17 +11,20 @@ static off_t upload_dir_size = 0;
 static off_t upload_count = 0;
 
 void update_upload_count(unsigned int c) {
-    upload_count += c;
-    [[NSUserDefaults standardUserDefaults] setInteger:upload_count forKey:@"upload_count"];
-
-    [[StatusBarActionController sharedController] update_upload_count_badge];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        upload_count += c;
+        [[NSUserDefaults standardUserDefaults] setInteger:upload_count forKey:@"upload_count"];
+        [[StatusBarActionController sharedController] update_upload_count_badge];
+    });
 }
 void init_upload_count() {
     upload_count = [[NSUserDefaults standardUserDefaults] integerForKey:@"upload_count"];
 }
 void dir_size_updater(off_t file_size) {
-    upload_dir_size += file_size;
-    [[StatusBarActionController sharedController] update_dir_size_badge];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        upload_dir_size += file_size;
+        [[StatusBarActionController sharedController] update_dir_size_badge];
+    });
 }
 
 @implementation StatusBarActionController
@@ -247,13 +250,16 @@ void dir_size_updater(off_t file_size) {
         return;
     NSArray<NSURL *> *files = [location_selector URLs];
 
-    __block unsigned int count = 0;
-    [files enumerateObjectsUsingBlock:^(NSURL *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-        if (upload_file((char *)[[obj path] UTF8String], api_key_header)) {
-            count++;
-        };
-    }];
-    update_upload_count(count);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        __block unsigned int count = 0;
+        [files
+            enumerateObjectsUsingBlock:^(NSURL *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+                if (upload_file((char *)[[obj path] UTF8String], api_key_header)) {
+                    count++;
+                };
+            }];
+        update_upload_count(count);
+    });
 }
 - (void)update_dir_size_badge {
     NSMenuItemBadge *location_menu_holder_badge = [[NSMenuItemBadge alloc]
