@@ -1,5 +1,6 @@
 #include "config.h"
 #include "fetch.h"
+#include "statusbar.h"
 #include "utils.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
@@ -55,8 +56,13 @@ void callback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
 		// 	   path_parts[path_parts_length - 1], eventFlags[i], eventIds[i],
 		// 	   candidate_state.st_birthtimespec.tv_sec);
 		printf("[C] - Uploading file\n");
-		if (upload_file(paths[i], api_key_header) && autodelete) {
-			unlink(paths[i]);
+		if (upload_file(paths[i], api_key_header)) {
+			update_upload_count(1);
+			if (autodelete) {
+				unlink(paths[i]);
+			} else {
+				dir_size_updater(candidate_state.st_blocks * 512);
+			}
 		};
 		free(duped_path);
 		free(path_parts);

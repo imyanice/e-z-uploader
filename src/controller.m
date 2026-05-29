@@ -36,7 +36,8 @@ void uploader_init() {
     [[NSUserDefaults standardUserDefaults] registerDefaults:@{
         @"key" : @"",
         @"autodelete" : @NO,
-        @"watch_path" : @"SCREENSHOT.APP"
+        @"watch_path" : @"SCREENSHOT.APP",
+        @"upload_count" : @0,
     }];
     update_prefs();
 

@@ -14,5 +14,6 @@ void release_vector(vector **vec);
 
 size_t cwrite_data(char *buf, size_t size, size_t nmenb, vector *vec);
 char **split(char *string, const char *delim, size_t *rl);
+off_t folder_size(const char *path);
 bool includes_string(int c, char **strs, char *incl);
 #endif

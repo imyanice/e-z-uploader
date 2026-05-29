@@ -1,9 +1,14 @@
 #include "utils.h"
+#include <dirent.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 void release_vector(vector **vec) {
 	if ((*vec)) {
 		free((*vec)->data);
@@ -60,4 +65,42 @@ bool includes_string(int c, char **strs, char *incl) {
 	while (c >= 0 && strcmp(incl, strs[c]) != 0)
 		c--;
 	return c >= 0;
+}
+
+static off_t folder_size_fd(int dfd) {
+	DIR *dir = fdopendir(dfd);
+	if (!dir) {
+		close(dfd);
+		return 0;
+	}
+
+	off_t total = 0;
+	struct dirent *e;
+
+	while ((e = readdir(dir)) != NULL) {
+		if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0)
+			continue;
+
+		struct stat st;
+		if (fstatat(dfd, e->d_name, &st, AT_SYMLINK_NOFOLLOW) != 0)
+			continue;
+
+		if (S_ISREG(st.st_mode)) {
+			total += st.st_blocks * 512;
+		} else if (S_ISDIR(st.st_mode)) {
+			int child = openat(dfd, e->d_name, O_RDONLY | O_DIRECTORY);
+			if (child >= 0)
+				total += folder_size_fd(child);
+		}
+	}
+
+	closedir(dir);
+	return total;
+}
+
+off_t folder_size(const char *path) {
+	int fd = open(path, O_RDONLY | O_DIRECTORY);
+	if (fd < 0)
+		return -1;
+	return folder_size_fd(fd);
 }

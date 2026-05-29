@@ -1,9 +1,28 @@
 #import "objc/statusbar.h"
+#import "fetch.h"
 #import "files.h"
 #import "objc/config.h"
 #import "objc/launchagent.h"
+#import "utils.h"
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+
+static off_t upload_dir_size = 0;
+static off_t upload_count = 0;
+
+void update_upload_count(unsigned int c) {
+    upload_count += c;
+    [[NSUserDefaults standardUserDefaults] setInteger:upload_count forKey:@"upload_count"];
+
+    [[StatusBarActionController sharedController] update_upload_count_badge];
+}
+void init_upload_count() {
+    upload_count = [[NSUserDefaults standardUserDefaults] integerForKey:@"upload_count"];
+}
+void dir_size_updater(off_t file_size) {
+    upload_dir_size += file_size;
+    [[StatusBarActionController sharedController] update_dir_size_badge];
+}
 
 @implementation StatusBarActionController
 + (instancetype)sharedController {
@@ -83,9 +102,12 @@
     [location_menu addItem:_shottr_location];
     [location_menu addItem:_cleanshotx_location];
 
-    NSMenuItem *location_menu_holder = [[NSMenuItem alloc] initWithTitle:@"Screenshots location"
-                                                                  action:NULL
-                                                           keyEquivalent:@""];
+    _location_menu_holder = [[NSMenuItem alloc] initWithTitle:@"Screenshots location"
+                                                       action:NULL
+                                                keyEquivalent:@""];
+
+    upload_dir_size = folder_size(watch_path);
+    [self update_dir_size_badge];
 
     _toggle_launch_agent = [[NSMenuItem alloc] initWithTitle:@"Launch at Login"
                                                       action:@selector(handle_toggle_launch_agent:)
@@ -99,13 +121,13 @@
                                                 keyEquivalent:@"q"];
 
     NSMenu *tray_menu = [[NSMenu alloc] initWithTitle:@"E-Z Uploader"];
-    [tray_menu setSubmenu:location_menu forItem:location_menu_holder];
+    [tray_menu setSubmenu:location_menu forItem:_location_menu_holder];
 
     [tray_menu addItem:fake_title];
     [tray_menu addItem:[NSMenuItem separatorItem]];
     [tray_menu addItem:set_key];
     [tray_menu addItem:_enable_autodelete];
-    [tray_menu addItem:location_menu_holder];
+    [tray_menu addItem:_location_menu_holder];
     [tray_menu addItem:[NSMenuItem separatorItem]];
     [tray_menu addItem:_toggle_launch_agent];
     [tray_menu addItem:quit_item];
@@ -146,6 +168,9 @@
     set_watch_path(@"SCREENSHOT.APP");
     update_prefs();
 
+    upload_dir_size = folder_size(watch_path);
+    [self update_dir_size_badge];
+
     watch_directory(watch_path);
 }
 - (void)handle_ss_location_to_shottr:(id)sender {
@@ -156,6 +181,9 @@
     set_watch_path(@"SHOTTR.APP");
     update_prefs();
 
+    upload_dir_size = folder_size(watch_path);
+    [self update_dir_size_badge];
+
     watch_directory(watch_path);
 }
 - (void)handle_ss_location_to_cleanshotx:(id)sender {
@@ -165,6 +193,9 @@
 
     set_watch_path(@"CLEANSHOTX.APP");
     update_prefs();
+
+    upload_dir_size = folder_size(watch_path);
+    [self update_dir_size_badge];
 
     watch_directory(watch_path);
 }
@@ -186,11 +217,29 @@
     set_watch_path([folder path]);
     update_prefs();
 
+    upload_dir_size = folder_size(watch_path);
+    [self update_dir_size_badge];
+
     watch_directory(watch_path);
 }
 - (void)handle_toggle_launch_agent:(id)sender {
     toggle_launch_agent();
     _toggle_launch_agent.state =
         isLaunchAgentInstalled() ? NSControlStateValueOn : NSControlStateValueOff;
+}
+- (void)update_dir_size_badge {
+    NSMenuItemBadge *location_menu_holder_badge = [[NSMenuItemBadge alloc]
+        initWithString:[NSByteCountFormatter
+                           stringFromByteCount:upload_dir_size
+                                    countStyle:NSByteCountFormatterCountStyleFile]];
+
+    _location_menu_holder.badge = location_menu_holder_badge;
+}
+- (void)update_upload_count_badge {
+    NSMenuItemBadge *upload_files_item_badge = [[NSMenuItemBadge alloc]
+        initWithString:[NSString stringWithFormat:@"%llu File%s", upload_count,
+                                                  upload_count > 1 ? "s" : ""]];
+
+    _upload_files_item.badge = upload_files_item_badge;
 }
 @end
