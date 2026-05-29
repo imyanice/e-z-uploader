@@ -52,6 +52,13 @@ void dir_size_updater(off_t file_size) {
 
     NSMenuItem *fake_title = [NSMenuItem sectionHeaderWithTitle:@"E-Z Uploader"];
 
+    _upload_files_item = [[NSMenuItem alloc] initWithTitle:@"Upload files"
+                                                    action:@selector(handle_upload_file:)
+                                             keyEquivalent:@"u"];
+    [_upload_files_item setTarget:self];
+    init_upload_count();
+    [self update_upload_count_badge];
+
     NSMenuItem *set_key = [[NSMenuItem alloc] initWithTitle:@"Set API Key"
                                                      action:@selector(handle_api_key_item:)
                                               keyEquivalent:@","];
@@ -124,6 +131,8 @@ void dir_size_updater(off_t file_size) {
     [tray_menu setSubmenu:location_menu forItem:_location_menu_holder];
 
     [tray_menu addItem:fake_title];
+    [tray_menu addItem:[NSMenuItem separatorItem]];
+    [tray_menu addItem:_upload_files_item];
     [tray_menu addItem:[NSMenuItem separatorItem]];
     [tray_menu addItem:set_key];
     [tray_menu addItem:_enable_autodelete];
@@ -226,6 +235,25 @@ void dir_size_updater(off_t file_size) {
     toggle_launch_agent();
     _toggle_launch_agent.state =
         isLaunchAgentInstalled() ? NSControlStateValueOn : NSControlStateValueOff;
+}
+- (void)handle_upload_file:(id)sended {
+    NSOpenPanel *location_selector = [NSOpenPanel openPanel];
+    location_selector.canChooseFiles = YES;
+    location_selector.canChooseDirectories = NO;
+    location_selector.allowsMultipleSelection = YES;
+
+    NSModalResponse clicked = [location_selector runModal];
+    if (clicked != NSModalResponseOK)
+        return;
+    NSArray<NSURL *> *files = [location_selector URLs];
+
+    __block unsigned int count = 0;
+    [files enumerateObjectsUsingBlock:^(NSURL *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        if (upload_file((char *)[[obj path] UTF8String], api_key_header)) {
+            count++;
+        };
+    }];
+    update_upload_count(count);
 }
 - (void)update_dir_size_badge {
     NSMenuItemBadge *location_menu_holder_badge = [[NSMenuItemBadge alloc]
