@@ -11,5 +11,8 @@ void set_api_key(NSString *val);
 void set_autodelete(BOOL val);
 bool get_autodelete(void);
 
+void set_watch_path(NSString *val);
+NSString *get_watch_path(void);
+
 void update_prefs(void);
 #endif

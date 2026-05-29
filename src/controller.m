@@ -1,7 +1,10 @@
+#import "files.h"
 #import "objc/config.h"
 #import "objc/notification.h"
 #import "objc/statusbar.h"
 #import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
+
 void setupMainMenu(void) {
     NSMenu *mainMenu = [[NSMenu alloc] init];
 
@@ -29,7 +32,12 @@ void setupMainMenu(void) {
 void uploader_init() {
     [NSApplication sharedApplication];
     [[NSProcessInfo processInfo] disableSuddenTermination];
-    [[NSUserDefaults standardUserDefaults] registerDefaults:@{@"key" : @"", @"autodelete" : @NO}];
+
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{
+        @"key" : @"",
+        @"autodelete" : @NO,
+        @"watch_path" : @"SCREENSHOT.APP"
+    }];
     update_prefs();
 
     [[NotificationHandler sharedDelegate] setup];
@@ -37,4 +45,7 @@ void uploader_init() {
 
     setupMainMenu();
 }
-void uploader_run(void) { [NSApp run]; }
+void uploader_run(void) {
+    watch_directory(watch_path);
+    [NSApp run];
+}
